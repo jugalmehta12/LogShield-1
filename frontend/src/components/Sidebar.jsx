@@ -1,34 +1,54 @@
-function Sidebar({ navItems, activePage, onNavigate }) {
+import { NavLink } from 'react-router-dom';
+
+const NAV_ITEMS = [
+  { to: '/dashboard', label: 'Dashboard' },
+  { to: '/logs', label: 'Logs' },
+  { to: '/alerts', label: 'Alerts' },
+  { to: '/settings', label: 'Settings' },
+];
+
+function Sidebar() {
   return (
-    <aside className="flex h-full flex-col border-r border-white/10 bg-slate-950/70 p-5 backdrop-blur-xl">
-      <div>
-        <p className="text-xs uppercase tracking-[0.35em] text-teal-300/70">LogShield</p>
-        <h1 className="mt-2 text-2xl font-semibold text-white">Security Command Center</h1>
-        <p className="mt-2 text-sm text-slate-400">Desktop SIEM foundation for log intake, visualization, and future threat detection.</p>
+    <aside className="flex h-full flex-col border-r border-cyan-400/10 bg-slate-950/80 px-4 py-6 backdrop-blur-xl">
+      <div className="rounded-3xl border border-white/10 bg-white/5 p-4">
+        <p className="text-xs uppercase tracking-[0.35em] text-cyan-300/80">
+          LogShield
+        </p>
+
+        <h1 className="mt-2 text-2xl font-semibold text-white">
+          SOC Console
+        </h1>
+
+        <p className="mt-2 text-sm text-slate-400">
+          Dark cybersecurity workspace for log visibility, alert review, and
+          operational readiness.
+        </p>
       </div>
+
       <nav className="mt-8 space-y-2">
-        {navItems.map((item) => {
-          const isActive = item.id === activePage;
-          return (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => onNavigate(item.id)}
-              className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition ${
+        {NAV_ITEMS.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            className={({ isActive }) =>
+              [
+                'flex items-center justify-between rounded-2xl border px-4 py-3 text-sm font-medium transition',
                 isActive
-                  ? 'border-teal-400/30 bg-teal-400/10 text-white'
-                  : 'border-white/5 bg-white/0 text-slate-300 hover:border-white/10 hover:bg-white/5 hover:text-white'
-              }`}
-            >
-              <span className="font-medium">{item.label}</span>
-              <span className="text-xs uppercase tracking-[0.25em] text-slate-500">{String(item.id).padStart(2, '0')}</span>
-            </button>
-          );
-        })}
+                  ? 'border-cyan-400/30 bg-cyan-400/10 text-white'
+                  : 'border-white/5 text-slate-300 hover:border-white/10 hover:bg-white/5 hover:text-white',
+              ].join(' ')
+            }
+          >
+            <span>{item.label}</span>
+            <span className="text-xs uppercase tracking-[0.28em] text-slate-500">
+              nav
+            </span>
+          </NavLink>
+        ))}
       </nav>
-      <div className="mt-auto rounded-3xl border border-white/10 bg-white/5 p-4 text-sm text-slate-300">
-        <p className="font-medium text-white">Foundation mode</p>
-        <p className="mt-2 text-slate-400">Detection and automated response modules are intentionally not enabled in Phase 1.</p>
+
+      <div className="mt-auto rounded-3xl border border-white/10 bg-slate-900/70 p-4 text-sm text-slate-400">
+        Detection logic is intentionally not enabled in the frontend skeleton.
       </div>
     </aside>
   );

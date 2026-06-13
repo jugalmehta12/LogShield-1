@@ -1,18 +1,13 @@
-from __future__ import annotations
-
-from datetime import UTC, datetime, timedelta
-
+from datetime import datetime, timezone, timedelta
 from sqlalchemy.orm import Session
-
 from app.models.alert import Alert
 from app.models.log import Log
-
 
 # ---------------------------------------------------------------------------
 # Sample data definitions
 # ---------------------------------------------------------------------------
 
-_now = datetime.now(UTC)
+_now = datetime.now(timezone.utc)
 
 SAMPLE_LOGS: list[dict] = [
     {

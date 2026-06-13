@@ -9,7 +9,7 @@ This repository contains the Phase 1 architecture scaffold only. Detection logic
 - FastAPI backend with a health endpoint and dummy API data.
 - SQLAlchemy and PostgreSQL foundation with environment-based configuration.
 - Electron + React + Vite + Tailwind desktop shell.
-- Axios-based frontend integration with backend endpoints.
+- React Router-based frontend navigation with placeholder pages.
 - Project documentation and Docker orchestration.
 
 ## Repository Layout
@@ -56,12 +56,16 @@ This repository contains the Phase 1 architecture scaffold only. Detection logic
 - `frontend/electron/preload.js` Electron preload bridge.
 - `frontend/src/main.jsx` React bootstrapping.
 - `frontend/src/App.jsx` top-level application routing.
-- `frontend/src/layouts/AppShell.jsx` desktop layout shell.
-- `frontend/src/components/*` reusable UI components.
-- `frontend/src/pages/*` Dashboard, Logs, Alerts, and Settings views.
-- `frontend/src/services/api.js` Axios client and backend calls.
-- `frontend/src/hooks/useDashboardMetrics.js` dashboard data hook.
-- `frontend/src/charts/ThreatTrendChart.jsx` placeholder chart visualization.
+- `frontend/src/layouts/MainLayout.jsx` desktop layout shell.
+- `frontend/src/components/Sidebar.jsx` sidebar navigation.
+- `frontend/src/components/Navbar.jsx` page header and status badges.
+- `frontend/src/components/StatCard.jsx` reusable dashboard metric card.
+- `frontend/src/components/LoadingSpinner.jsx` reusable loading indicator.
+- `frontend/src/pages/Dashboard.jsx` dashboard placeholder page.
+- `frontend/src/pages/Logs.jsx` logs table skeleton.
+- `frontend/src/pages/Alerts.jsx` alert card skeleton.
+- `frontend/src/pages/Settings.jsx` settings skeleton.
+- `frontend/src/services/api.js` Axios client stub for future API wiring.
 - `frontend/src/styles/index.css` global styles and theme foundation.
 
 ### Docs
@@ -89,6 +93,16 @@ Copy-Item .env.example .env
 npm install
 ```
 
+### Frontend-only workflow
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+If you want the desktop shell to open with the Vite renderer, keep the backend stopped; the current frontend skeleton does not require live API calls.
+
 ### Docker
 
 ```bash
@@ -106,6 +120,13 @@ uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
 ### Run the desktop frontend
+
+```bash
+cd frontend
+npm run dev
+```
+
+### Run the frontend only
 
 ```bash
 cd frontend
