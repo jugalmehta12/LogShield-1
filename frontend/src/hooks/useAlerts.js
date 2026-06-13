@@ -8,7 +8,9 @@ function normalizeAlerts(items) {
 export function useAlerts() {
   const [alerts, setAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [updatingAlertId, setUpdatingAlertId] = useState(null);
   const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
 
   const fetchAlerts = useCallback(async () => {
     setLoading(true);
@@ -24,6 +26,30 @@ export function useAlerts() {
       setLoading(false);
     }
   }, []);
+
+  const updateAlertStatus = useCallback(async (alertId, status) => {
+    setUpdatingAlertId(alertId);
+    setError('');
+    setMessage('');
+
+    const previousAlerts = alerts;
+    const nextAlerts = previousAlerts.map((alert) =>
+      alert.id === alertId ? { ...alert, status } : alert,
+    );
+
+    setAlerts(nextAlerts);
+
+    try {
+      await api.patch(`/alerts/${alertId}`, { status });
+      setMessage(`Alert ${alertId} updated to ${status}.`);
+      await fetchAlerts();
+    } catch (requestError) {
+      setAlerts(previousAlerts);
+      setError('Unable to update alert status. Please try again.');
+    } finally {
+      setUpdatingAlertId(null);
+    }
+  }, [alerts, fetchAlerts]);
 
   useEffect(() => {
     let mounted = true;
@@ -42,5 +68,5 @@ export function useAlerts() {
     };
   }, [fetchAlerts]);
 
-  return { alerts, loading, error, refetch: fetchAlerts };
+  return { alerts, loading, error, message, updatingAlertId, refetch: fetchAlerts, updateAlertStatus };
 }

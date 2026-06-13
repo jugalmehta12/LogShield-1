@@ -10,12 +10,12 @@ export function useLogs() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const fetchLogs = useCallback(async () => {
+  const fetchLogs = useCallback(async (params = {}) => {
     setLoading(true);
     setError('');
 
     try {
-      const response = await api.get('/logs');
+      const response = await api.get('/logs', { params });
       setLogs(normalizeLogs(response.data.items));
     } catch (requestError) {
       setLogs([]);

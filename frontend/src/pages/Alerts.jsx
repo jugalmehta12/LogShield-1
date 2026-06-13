@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useAlerts } from '../hooks/useAlerts';
 
@@ -14,8 +15,28 @@ const STATUS_STYLES = {
   resolved: 'border-emerald-400/20 bg-emerald-400/10 text-emerald-200',
 };
 
+const STATUS_BUTTON_STYLES = {
+  open: 'border-rose-400/30 bg-rose-400/10 text-rose-100 hover:bg-rose-400/20',
+  investigating: 'border-amber-400/30 bg-amber-400/10 text-amber-100 hover:bg-amber-400/20',
+  resolved: 'border-emerald-400/30 bg-emerald-400/10 text-emerald-100 hover:bg-emerald-400/20',
+};
+
 function AlertsPage() {
-  const { alerts, loading, error } = useAlerts();
+  const { alerts, loading, error, message, updatingAlertId, refetch, updateAlertStatus } = useAlerts();
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      refetch();
+    }, 30000);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [refetch]);
+
+  const handleStatusChange = async (alertId, status) => {
+    await updateAlertStatus(alertId, status);
+  };
 
   return (
     <section className="space-y-4">
@@ -29,6 +50,12 @@ function AlertsPage() {
       {error ? (
         <div className="rounded-2xl border border-rose-400/20 bg-rose-400/10 px-4 py-3 text-sm text-rose-100">
           {error}
+        </div>
+      ) : null}
+
+      {message ? (
+        <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-100">
+          {message}
         </div>
       ) : null}
 
@@ -63,6 +90,27 @@ function AlertsPage() {
                       {String(alert.status || 'open')}
                     </p>
                   </div>
+                </div>
+
+                <div className="mt-5 flex flex-wrap gap-3">
+                  {['open', 'investigating', 'resolved'].map((status) => {
+                    const isActive = statusKey === status;
+                    const isUpdating = updatingAlertId === alert.id;
+
+                    return (
+                      <button
+                        key={status}
+                        type="button"
+                        disabled={isUpdating}
+                        onClick={() => handleStatusChange(alert.id, status)}
+                        className={`rounded-full border px-4 py-2 text-xs font-medium uppercase tracking-[0.2em] transition ${STATUS_BUTTON_STYLES[status]} ${
+                          isActive ? 'ring-1 ring-white/30' : ''
+                        } ${isUpdating ? 'cursor-not-allowed opacity-60' : ''}`}
+                      >
+                        {isUpdating && isActive ? 'Updating...' : status}
+                      </button>
+                    );
+                  })}
                 </div>
 
                 <p className="mt-4 text-sm text-slate-400">Created At: {new Date(alert.created_at).toLocaleString()}</p>

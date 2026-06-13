@@ -1,12 +1,15 @@
 from __future__ import annotations
 
+import logging
 from datetime import UTC, datetime
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.models.alert import Alert
-from app.schemas.alert import AlertCreate
+from app.schemas.alert import AlertCreate, AlertStatusLiteral
+
+logger = logging.getLogger(__name__)
 
 
 def create_alert(db: Session, payload: AlertCreate) -> Alert:
@@ -57,3 +60,26 @@ def get_alerts(
     )
 
     return total, items
+
+
+def update_alert_status(db: Session, alert_id: int, status: AlertStatusLiteral) -> Alert | None:
+    """Update only the workflow status of an alert.
+
+    Args:
+        db: Active SQLAlchemy session.
+        alert_id: Primary key of the alert to update.
+        status: New workflow status. Must be one of the allowed lifecycle values.
+
+    Returns:
+        The updated ``Alert`` ORM instance when found, otherwise ``None``.
+    """
+    alert = db.get(Alert, alert_id)
+    if alert is None:
+        logger.info("Alert %s not found for status update", alert_id)
+        return None
+
+    alert.status = status
+    db.commit()
+    db.refresh(alert)
+    logger.info("Updated alert %s status to %s", alert_id, status)
+    return alert

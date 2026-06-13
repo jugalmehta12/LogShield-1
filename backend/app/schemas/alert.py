@@ -7,7 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 # ── Status / severity literals for strict validation ────────────────────────
-AlertStatusLiteral = Literal["open", "investigating", "resolved", "dismissed"]
+AlertStatusLiteral = Literal["open", "investigating", "resolved"]
 SeverityLiteral = Literal["low", "medium", "high", "critical"]
 
 
@@ -26,6 +26,12 @@ class AlertCreate(AlertBase):
         default=None,
         description="ISO-8601 timestamp; defaults to now() if omitted.",
     )
+
+
+class AlertStatusUpdate(BaseModel):
+    """Request schema for updating the workflow status of an alert."""
+
+    status: str = Field(..., examples=["investigating"])
 
 
 class AlertRead(AlertBase):

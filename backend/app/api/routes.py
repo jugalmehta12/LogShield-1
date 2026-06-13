@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app import crud
 from app.database.session import get_db
-from app.schemas.alert import AlertCreate, AlertPage, AlertRead
+from app.schemas.alert import AlertCreate, AlertPage, AlertRead, AlertStatusUpdate
 from app.schemas.log import LogCreate, LogPage, LogRead
 
 router = APIRouter()
@@ -36,13 +36,33 @@ def list_logs(
         str | None,
         Query(description="Filter by severity: low | medium | high | critical"),
     ] = None,
+    source: Annotated[
+        str | None,
+        Query(description="Filter by source using an exact match"),
+    ] = None,
+    event_type: Annotated[
+        str | None,
+        Query(description="Filter by event type using an exact match"),
+    ] = None,
+    search: Annotated[
+        str | None,
+        Query(description="Case-insensitive search within raw log text"),
+    ] = None,
     page: Annotated[int, Query(ge=1, description="Page number (1-indexed)")] = 1,
     page_size: Annotated[
         int, Query(ge=1, le=MAX_PAGE_SIZE, description="Records per page")
     ] = 20,
 ) -> LogPage:
     """Return a paginated list of log entries, optionally filtered by severity."""
-    total, items = crud.get_logs(db, severity=severity, page=page, page_size=page_size)
+    total, items = crud.get_logs(
+        db,
+        severity=severity,
+        source=source,
+        event_type=event_type,
+        search=search,
+        page=page,
+        page_size=page_size,
+    )
     return LogPage(total=total, page=page, page_size=page_size, items=items)
 
 
@@ -75,7 +95,7 @@ def list_alerts(
         str | None,
         Query(
             alias="status",
-            description="Filter by status: open | investigating | resolved | dismissed",
+            description="Filter by status: open | investigating | resolved",
         ),
     ] = None,
     page: Annotated[int, Query(ge=1, description="Page number (1-indexed)")] = 1,
@@ -100,6 +120,39 @@ def list_alerts(
 def create_alert(db: DbSession, payload: AlertCreate) -> AlertRead:
     """Create a new security alert."""
     return crud.create_alert(db, payload)
+
+
+@router.patch(
+    "/alerts/{alert_id}",
+    response_model=AlertRead,
+    summary="Update alert workflow status",
+    tags=["alerts"],
+)
+def update_alert_status(
+    alert_id: int,
+    payload: AlertStatusUpdate,
+    db: DbSession,
+) -> AlertRead:
+    """Update only the status field for an alert.
+
+    Returns a 400 response when the supplied status is not part of the allowed
+    alert lifecycle values.
+    """
+    status_value = payload.status.strip().lower()
+    if status_value not in ("open", "investigating", "resolved"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid alert status",
+        )
+
+    alert = crud.update_alert_status(db, alert_id=alert_id, status=status_value)
+    if alert is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Alert not found",
+        )
+
+    return alert
 
 
 # ===========================================================================

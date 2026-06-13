@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import StatCard from '../components/StatCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import AlertsStatusChart from '../charts/AlertsStatusChart';
@@ -9,13 +10,25 @@ function DashboardPage() {
   const { logs, loading: logsLoading, error: logsError, refetch: refetchLogs } = useLogs();
   const { alerts, loading: alertsLoading, error: alertsError, refetch: refetchAlerts } = useAlerts();
 
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      refetchLogs();
+      refetchAlerts();
+    }, 30000);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [refetchAlerts, refetchLogs]);
+
   const isLoading = logsLoading || alertsLoading;
   const error = logsError || alertsError;
 
   const totalLogs = logs.length;
   const totalAlerts = alerts.length;
-  const criticalAlerts = alerts.filter((alert) => String(alert.severity || '').toLowerCase() === 'critical').length;
   const openAlerts = alerts.filter((alert) => String(alert.status || '').toLowerCase() === 'open').length;
+  const investigatingAlerts = alerts.filter((alert) => String(alert.status || '').toLowerCase() === 'investigating').length;
+  const resolvedAlerts = alerts.filter((alert) => String(alert.status || '').toLowerCase() === 'resolved').length;
 
   const cards = [
     {
@@ -31,16 +44,28 @@ function DashboardPage() {
       accent: 'from-amber-400 to-orange-500',
     },
     {
-      label: 'Critical Alerts',
-      value: criticalAlerts.toString(),
-      detail: 'High-priority events from the alert stream.',
-      accent: 'from-rose-400 to-fuchsia-500',
+      label: 'Open Alerts',
+      value: openAlerts.toString(),
+      detail: 'Alerts requiring immediate attention.',
+      accent: 'from-rose-400 to-red-500',
+    },
+    {
+      label: 'Investigating Alerts',
+      value: investigatingAlerts.toString(),
+      detail: 'Alerts currently in active review.',
+      accent: 'from-amber-400 to-yellow-500',
+    },
+    {
+      label: 'Resolved Alerts',
+      value: resolvedAlerts.toString(),
+      detail: 'Alerts closed from workflow management.',
+      accent: 'from-emerald-400 to-cyan-400',
     },
     {
       label: 'System Status',
       value: error ? 'Degraded' : 'Online',
       detail: error || 'Backend API and frontend are connected.',
-      accent: 'from-emerald-400 to-cyan-400',
+      accent: 'from-cyan-400 to-teal-400',
     },
   ];
 

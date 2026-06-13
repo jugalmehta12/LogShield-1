@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useLogs } from '../hooks/useLogs';
 
@@ -8,8 +10,68 @@ const SEVERITY_STYLES = {
   critical: 'border-rose-400/20 bg-rose-400/10 text-rose-200',
 };
 
+const SEVERITY_OPTIONS = [
+  { value: '', label: 'All' },
+  { value: 'low', label: 'Low' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'high', label: 'High' },
+  { value: 'critical', label: 'Critical' },
+];
+
 function LogsPage() {
-  const { logs, loading, error } = useLogs();
+  const { logs, loading, error, refetch } = useLogs();
+  const [search, setSearch] = useState('');
+  const [severity, setSeverity] = useState('');
+  const [source, setSource] = useState('');
+  const [eventType, setEventType] = useState('');
+
+  const queryParams = useMemo(() => {
+    const params = {};
+
+    if (severity) {
+      params.severity = severity;
+    }
+
+    if (source) {
+      params.source = source;
+    }
+
+    if (eventType) {
+      params.event_type = eventType;
+    }
+
+    if (search.trim()) {
+      params.search = search.trim();
+    }
+
+    return params;
+  }, [eventType, search, severity, source]);
+
+  const sourceOptions = useMemo(() => {
+    return Array.from(new Set(logs.map((log) => log.source).filter(Boolean))).sort((left, right) =>
+      String(left).localeCompare(String(right)),
+    );
+  }, [logs]);
+
+  const eventTypeOptions = useMemo(() => {
+    return Array.from(new Set(logs.map((log) => log.event_type).filter(Boolean))).sort((left, right) =>
+      String(left).localeCompare(String(right)),
+    );
+  }, [logs]);
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      refetch(queryParams);
+    }, 30000);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [queryParams, refetch]);
+
+  useEffect(() => {
+    refetch(queryParams);
+  }, [queryParams, refetch]);
 
   return (
     <section className="rounded-3xl border border-white/10 bg-slate-950/70 p-5 shadow-[0_24px_80px_rgba(2,6,23,0.45)] backdrop-blur-xl">
@@ -18,7 +80,76 @@ function LogsPage() {
           <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Logs</p>
           <h3 className="mt-2 text-lg font-semibold text-white">Backend log table</h3>
         </div>
-        {loading ? <LoadingSpinner label="Loading logs" /> : <span className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-xs text-cyan-200">Live</span>}
+        <div className="flex items-center gap-3">
+          {loading ? <LoadingSpinner label="Loading logs" /> : <span className="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-3 py-1 text-xs text-cyan-200">Live</span>}
+          <button
+            type="button"
+            onClick={() => refetch(queryParams)}
+            className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium uppercase tracking-[0.2em] text-slate-200 transition hover:border-cyan-400/30 hover:bg-cyan-400/10 hover:text-white"
+          >
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <div className="mt-6 grid gap-4 xl:grid-cols-4">
+        <label className="rounded-2xl border border-white/10 bg-white/5 p-4">
+          <span className="text-xs uppercase tracking-[0.25em] text-slate-500">Search</span>
+          <input
+            type="text"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Search raw logs..."
+            className="mt-3 w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500"
+          />
+        </label>
+
+        <label className="rounded-2xl border border-white/10 bg-white/5 p-4">
+          <span className="text-xs uppercase tracking-[0.25em] text-slate-500">Severity</span>
+          <select
+            value={severity}
+            onChange={(event) => setSeverity(event.target.value)}
+            className="mt-3 w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-sm text-white outline-none"
+          >
+            {SEVERITY_OPTIONS.map((option) => (
+              <option key={option.value || 'all'} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="rounded-2xl border border-white/10 bg-white/5 p-4">
+          <span className="text-xs uppercase tracking-[0.25em] text-slate-500">Source</span>
+          <select
+            value={source}
+            onChange={(event) => setSource(event.target.value)}
+            className="mt-3 w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-sm text-white outline-none"
+          >
+            <option value="">All</option>
+            {sourceOptions.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="rounded-2xl border border-white/10 bg-white/5 p-4">
+          <span className="text-xs uppercase tracking-[0.25em] text-slate-500">Event Type</span>
+          <select
+            value={eventType}
+            onChange={(event) => setEventType(event.target.value)}
+            className="mt-3 w-full rounded-2xl border border-white/10 bg-slate-950/80 px-4 py-3 text-sm text-white outline-none"
+          >
+            <option value="">All</option>
+            {eventTypeOptions.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
 
       {error ? (
