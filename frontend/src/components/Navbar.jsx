@@ -2,11 +2,14 @@ import { useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const TITLES = {
-  '/dashboard': ['Dashboard', 'Operational overview for the LogShield workstation.'],
-  '/logs': ['Logs', 'Structured log review and table-first analysis view.'],
-  '/alerts': ['Alerts', 'Alert cards for SOC-style triage flow.'],
-  '/rules': ['Rules', 'Detection rule management and configuration.'],
-  '/settings': ['Settings', 'Application configuration and environment controls.'],
+  '/dashboard':      ['Dashboard',       'Operational overview for the LogShield workstation.'],
+  '/logs':           ['Logs',            'Structured log review and table-first analysis view.'],
+  '/alerts':         ['Alerts',          'Alert cards for SOC-style triage flow.'],
+  '/analytics':      ['Analytics',       'Aggregated metrics and chart breakdowns.'],
+  '/live-analytics': ['Live Analytics',  'Auto-refreshing analytics dashboard with KPIs and charts.'],
+  '/rules':          ['Rules',           'Detection rule management and configuration.'],
+  '/incidents':      ['Incidents',       'Security incident tracking and investigation.'],
+  '/settings':       ['Settings',        'Application configuration and environment controls.'],
 };
 
 const ROLE_STYLES = {

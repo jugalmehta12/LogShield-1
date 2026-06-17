@@ -50,3 +50,56 @@ a {
   color: inherit;
   text-decoration: none;
 }
+
+/* ── Keyframe animations ──────────────────────────────────────────────────── */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.4; }
+  50%       { opacity: 0.8; }
+}
+
+/* ── Responsive: KPI grid ─────────────────────────────────────────────────── */
+/* Desktop default: 4 columns (set inline on the element) */
+
+@media (max-width: 1024px) {
+  .kpi-grid-responsive {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .kpi-grid-responsive {
+    grid-template-columns: repeat(1, 1fr) !important;
+  }
+}
+
+/* ── Responsive: chart row ────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .chart-row-responsive {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ── Responsive: stat/KPI grid (Dashboard page) ───────────────────────────── */
+@media (max-width: 1024px) {
+  .stat-grid-responsive {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .stat-grid-responsive {
+    grid-template-columns: repeat(1, 1fr) !important;
+  }
+}
+
+/* ── StatCard height guardrail ────────────────────────────────────────────── */
+/* Belt-and-suspenders: prevents any inherited Tailwind prose from inflating cards */
+article.stat-card-root {
+  min-height: 110px;
+  max-height: 120px;
+}

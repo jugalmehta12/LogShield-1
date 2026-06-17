@@ -3,9 +3,11 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
 import MainLayout from './layouts/MainLayout';
 import AlertsPage from './pages/Alerts';
+import AnalyticsPage from './pages/Analytics';
 import DashboardPage from './pages/Dashboard';
 import IncidentDetailPage from './pages/IncidentDetail';
 import IncidentListPage from './pages/IncidentList';
+import LiveAnalyticsDashboard from './pages/LiveAnalyticsDashboard';
 import LoginPage from './pages/Login';
 import LogsPage from './pages/Logs';
 import RegisterPage from './pages/Register';
@@ -38,6 +40,8 @@ function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/logs" element={<LogsPage />} />
           <Route path="/alerts" element={<AlertsPage />} />
+          <Route path="/analytics" element={<AnalyticsPage />} />
+          <Route path="/live-analytics" element={<LiveAnalyticsDashboard />} />
           <Route path="/rules" element={<RulesPage />} />
           <Route path="/incidents" element={<IncidentListPage />} />
           <Route path="/incidents/:id" element={<IncidentDetailPage />} />

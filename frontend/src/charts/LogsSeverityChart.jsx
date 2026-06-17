@@ -1,41 +1,96 @@
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+
+const SEVERITY_DATA_TEMPLATE = [
+  { name: 'Low',      key: 'low',      fill: '#22c55e' },
+  { name: 'Medium',   key: 'medium',   fill: '#eab308' },
+  { name: 'High',     key: 'high',     fill: '#f97316' },
+  { name: 'Critical', key: 'critical', fill: '#ef4444' },
+];
 
 function LogsSeverityChart({ logs }) {
   const counts = logs.reduce(
-    (accumulator, log) => {
-      const severity = String(log.severity || 'unknown').toLowerCase();
-      accumulator[severity] = (accumulator[severity] || 0) + 1;
-      return accumulator;
+    (acc, log) => {
+      const sev = String(log.severity || 'unknown').toLowerCase();
+      acc[sev] = (acc[sev] || 0) + 1;
+      return acc;
     },
     { low: 0, medium: 0, high: 0, critical: 0 },
   );
 
-  const data = [
-    { name: 'Low', value: counts.low, fill: '#22c55e' },
-    { name: 'Medium', value: counts.medium, fill: '#eab308' },
-    { name: 'High', value: counts.high, fill: '#f97316' },
-    { name: 'Critical', value: counts.critical, fill: '#ef4444' },
-  ];
+  const data = SEVERITY_DATA_TEMPLATE.map((d) => ({ ...d, value: counts[d.key] ?? 0 }));
 
   return (
-    <div className="rounded-3xl border border-white/10 bg-slate-950/70 p-5 shadow-[0_24px_80px_rgba(2,6,23,0.45)] backdrop-blur-xl">
-      <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Charts</p>
-      <h3 className="mt-2 text-lg font-semibold text-white">Logs by Severity</h3>
-      <div className="mt-5 h-72">
+    <div
+      style={{
+        borderRadius:   '14px',
+        border:         '1px solid rgba(255,255,255,0.07)',
+        background:     'linear-gradient(180deg,rgba(8,12,24,0.92),rgba(3,6,15,0.92))',
+        backdropFilter: 'blur(14px)',
+        padding:        '14px 16px 12px',
+        boxShadow:      '0 4px 20px rgba(0,0,0,0.35)',
+      }}
+    >
+      {/* header */}
+      <div style={{ marginBottom: '10px' }}>
+        <p
+          style={{
+            margin:        0,
+            fontSize:      '10px',
+            fontWeight:    600,
+            letterSpacing: '0.2em',
+            textTransform: 'uppercase',
+            color:         '#475569',
+          }}
+        >
+          Charts
+        </p>
+        <h3
+          style={{
+            margin:     '2px 0 0',
+            fontSize:   '13px',
+            fontWeight: 600,
+            color:      '#f1f5f9',
+          }}
+        >
+          Logs by Severity
+        </h3>
+      </div>
+
+      {/* chart */}
+      <div style={{ height: '220px' }}>
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" vertical={false} />
-            <XAxis dataKey="name" stroke="#94a3b8" tickLine={false} axisLine={false} />
-            <YAxis stroke="#94a3b8" tickLine={false} axisLine={false} allowDecimals={false} />
+          <BarChart data={data} margin={{ top: 4, right: 8, bottom: 0, left: -8 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+            <XAxis
+              dataKey="name"
+              stroke="#475569"
+              tick={{ fill: '#64748b', fontSize: 11 }}
+              tickLine={false}
+              axisLine={false}
+            />
+            <YAxis
+              stroke="#475569"
+              tick={{ fill: '#64748b', fontSize: 11 }}
+              tickLine={false}
+              axisLine={false}
+              allowDecimals={false}
+              width={24}
+            />
             <Tooltip
               contentStyle={{
-                background: '#020617',
-                border: '1px solid rgba(148,163,184,0.2)',
-                borderRadius: 16,
-                color: '#e2e8f0',
+                background:   'rgba(8,12,30,0.97)',
+                border:       '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '10px',
+                color:        '#f1f5f9',
+                fontSize:     '12px',
+                boxShadow:    '0 8px 32px rgba(0,0,0,0.5)',
               }}
             />
-            <Bar dataKey="value" radius={[10, 10, 0, 0]} />
+            <Bar dataKey="value" radius={[5, 5, 0, 0]}>
+              {data.map((entry) => (
+                <Cell key={entry.name} fill={entry.fill} />
+              ))}
+            </Bar>
           </BarChart>
         </ResponsiveContainer>
       </div>

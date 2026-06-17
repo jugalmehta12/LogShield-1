@@ -4,6 +4,8 @@ const NAV_ITEMS = [
   { to: '/dashboard', label: 'Dashboard' },
   { to: '/logs', label: 'Logs' },
   { to: '/alerts', label: 'Alerts' },
+  { to: '/analytics', label: 'Analytics' },
+  { to: '/live-analytics', label: 'Live Analytics' },
   { to: '/incidents', label: 'Incidents' },
   { to: '/rules', label: 'Rules' },
   { to: '/settings', label: 'Settings' },
