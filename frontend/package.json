@@ -5,7 +5,7 @@
   "type": "module",
   "main": "electron/main.js",
   "scripts": {
-    "dev:renderer": "vite",
+    "dev:renderer": "vite --host 0.0.0.0",
     "dev:electron": "wait-on http://localhost:5173 && electron .",
     "dev": "concurrently -k \"npm:dev:renderer\" \"npm:dev:electron\"",
     "build": "vite build",
@@ -20,7 +20,7 @@
     "recharts": "^2.12.7"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^4.3.1",
+    "@vitejs/plugin-react": "^6.0.2",
     "autoprefixer": "^10.4.20",
     "concurrently": "^9.0.1",
     "electron": "^42.4.0",
