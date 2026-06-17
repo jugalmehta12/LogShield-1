@@ -22,9 +22,9 @@ class UserRegister(BaseModel):
     password: str = Field(
         ...,
         min_length=8,
-        max_length=128,
-        description="Must be at least 8 characters.",
-        examples=["StrongPassword123!"],
+        max_length=72,
+        description="Password must be between 8 and 72 characters.",
+        examples=["Admin123!"],
     )
     role: RoleLiteral = Field(default="viewer", examples=["analyst"])
 
@@ -43,7 +43,7 @@ class UserLogin(BaseModel):
     """Request body schema for authenticating a user."""
 
     username: str = Field(..., min_length=1, examples=["analyst01"])
-    password: str = Field(..., min_length=1, examples=["StrongPassword123!"])
+    password: str = Field(..., min_length=8, max_length=72, examples=["Admin123!"])
 
 
 class TokenResponse(BaseModel):

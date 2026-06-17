@@ -5,12 +5,14 @@ import LogsSeverityChart from '../charts/LogsSeverityChart';
 import { useAlerts } from '../hooks/useAlerts';
 import { useLogs } from '../hooks/useLogs';
 import { useRules } from '../hooks/useRules';
+import { useIncidents } from '../hooks/useIncidents';
 import { useRealtimeUpdates } from '../hooks/useRealtimeUpdates';
 
 function DashboardPage() {
   const { logs, loading: logsLoading, error: logsError, refetch: refetchLogs } = useLogs();
   const { alerts, loading: alertsLoading, error: alertsError, refetch: refetchAlerts } = useAlerts();
   const { rules, refetch: refetchRules } = useRules();
+  const { incidents, refetch: refetchIncidents } = useIncidents();
 
   useRealtimeUpdates({
     log_created: () => {
@@ -26,6 +28,8 @@ function DashboardPage() {
     rule_created: () => refetchRules(),
     rule_updated: () => refetchRules(),
     rule_deleted: () => refetchRules(),
+    incident_created: () => refetchIncidents(),
+    incident_updated: () => refetchIncidents(),
   });
 
   const isLoading = logsLoading || alertsLoading;
@@ -37,6 +41,8 @@ function DashboardPage() {
   const investigatingAlerts = alerts.filter((alert) => String(alert.status || '').toLowerCase() === 'investigating').length;
   const resolvedAlerts = alerts.filter((alert) => String(alert.status || '').toLowerCase() === 'resolved').length;
   const activeRules = rules.filter((r) => r.enabled).length;
+  const openIncidents = incidents.filter((i) => i.status === 'open').length;
+  const investigatingIncidents = incidents.filter((i) => i.status === 'investigating').length;
 
   const cards = [
     {
@@ -70,6 +76,18 @@ function DashboardPage() {
       accent: 'from-emerald-400 to-cyan-400',
     },
     {
+      label: 'Open Incidents',
+      value: openIncidents.toString(),
+      detail: 'Security incidents awaiting investigation.',
+      accent: 'from-rose-500 to-pink-500',
+    },
+    {
+      label: 'Investigating Incidents',
+      value: investigatingIncidents.toString(),
+      detail: 'Incidents actively under analyst review.',
+      accent: 'from-violet-400 to-indigo-500',
+    },
+    {
       label: 'Active Rules',
       value: activeRules.toString(),
       detail: 'Detection rules currently enabled.',
@@ -85,6 +103,7 @@ function DashboardPage() {
 
   const dashboardSummary = [
     { label: 'Open Alerts', value: openAlerts },
+    { label: 'Open Incidents', value: openIncidents },
     { label: 'Logs Loaded', value: totalLogs },
     { label: 'Active Rules', value: activeRules },
   ];
@@ -126,7 +145,7 @@ function DashboardPage() {
         <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Auto Refresh</p>
         <h3 className="mt-2 text-lg font-semibold text-white">Dashboard updates instantly via WebSocket</h3>
         <p className="mt-3 text-sm leading-6 text-slate-300">
-          The dashboard listens for realtime log and alert events and refreshes itself without polling.
+          The dashboard listens for realtime log, alert, and incident events and refreshes itself without polling.
         </p>
       </section>
     </div>
@@ -134,3 +153,4 @@ function DashboardPage() {
 }
 
 export default DashboardPage;
+

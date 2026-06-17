@@ -1,4 +1,13 @@
 from app.crud.alert import create_alert, get_alerts, update_alert_status
+from app.crud.incident import (
+    create_incident,
+    create_note,
+    delete_incident,
+    get_incident,
+    get_incidents,
+    get_notes,
+    update_incident,
+)
 from app.crud.log import create_log, get_logs
 from app.crud.rule import (
     create_rule,
@@ -24,6 +33,13 @@ __all__ = [
     "create_alert",
     "get_alerts",
     "update_alert_status",
+    "create_incident",
+    "get_incident",
+    "get_incidents",
+    "update_incident",
+    "delete_incident",
+    "get_notes",
+    "create_note",
     "create_rule",
     "get_rule",
     "get_rules",

@@ -140,6 +140,52 @@ def build_rule_event(event_type: str, rule: Any) -> dict[str, Any]:
     return _build_event(event_type, serialize_rule(rule))
 
 
+# =============================================================================
+# Incident WebSocket event helpers
+# =============================================================================
+
+
+def serialize_incident(incident: Any) -> dict[str, Any]:
+    """Convert an Incident ORM instance into a JSON-serializable payload."""
+    return {
+        "id": incident.id,
+        "title": incident.title,
+        "description": incident.description,
+        "status": incident.status,
+        "severity": incident.severity,
+        "created_by": incident.created_by,
+        "alert_id": incident.alert_id,
+        "created_at": _serialize_datetime(incident.created_at),
+        "updated_at": _serialize_datetime(incident.updated_at),
+    }
+
+
+def serialize_note(note: Any) -> dict[str, Any]:
+    """Convert an InvestigationNote ORM instance into a JSON-serializable payload."""
+    return {
+        "id": note.id,
+        "incident_id": note.incident_id,
+        "author_id": note.author_id,
+        "note": note.note,
+        "created_at": _serialize_datetime(note.created_at),
+    }
+
+
+def build_incident_created_event(incident: Any) -> dict[str, Any]:
+    """Build the payload broadcast when an incident is created."""
+    return _build_event("incident_created", serialize_incident(incident))
+
+
+def build_incident_updated_event(incident: Any) -> dict[str, Any]:
+    """Build the payload broadcast when an incident is updated."""
+    return _build_event("incident_updated", serialize_incident(incident))
+
+
+def build_note_added_event(note: Any) -> dict[str, Any]:
+    """Build the payload broadcast when an investigation note is added."""
+    return _build_event("note_added", serialize_note(note))
+
+
 def broadcast_from_sync(message: dict[str, Any]) -> None:
     """Broadcast a websocket event from synchronous code.
 
@@ -151,3 +197,4 @@ def broadcast_from_sync(message: dict[str, Any]) -> None:
         anyio.from_thread.run(websocket_manager.broadcast, message)
     except RuntimeError:
         logger.debug("Skipped WebSocket broadcast outside AnyIO worker thread: %s", message.get("type"))
+

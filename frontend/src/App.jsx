@@ -4,6 +4,8 @@ import { AuthProvider } from './context/AuthContext';
 import MainLayout from './layouts/MainLayout';
 import AlertsPage from './pages/Alerts';
 import DashboardPage from './pages/Dashboard';
+import IncidentDetailPage from './pages/IncidentDetail';
+import IncidentListPage from './pages/IncidentList';
 import LoginPage from './pages/Login';
 import LogsPage from './pages/Logs';
 import RegisterPage from './pages/Register';
@@ -17,7 +19,7 @@ import SettingsPage from './pages/Settings';
  *   /login           → LoginPage      (public)
  *   /register        → RegisterPage   (public)
  *   /*               → MainLayout     (protected — redirects to /login if not authenticated)
- *     /dashboard, /logs, /alerts, /rules, /settings
+ *     /dashboard, /logs, /alerts, /rules, /incidents, /settings
  *
  * ``AuthProvider`` wraps everything so ``useAuth`` is available to all
  * descendants including MainLayout, Navbar, and page components.
@@ -37,6 +39,8 @@ function App() {
           <Route path="/logs" element={<LogsPage />} />
           <Route path="/alerts" element={<AlertsPage />} />
           <Route path="/rules" element={<RulesPage />} />
+          <Route path="/incidents" element={<IncidentListPage />} />
+          <Route path="/incidents/:id" element={<IncidentDetailPage />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Route>
 
@@ -48,3 +52,4 @@ function App() {
 }
 
 export default App;
+

@@ -8,12 +8,14 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.auth import router as auth_router
+from app.api.incidents import router as incidents_router
 from app.api.routes import router as api_router
 from app.core.config import get_settings
 from app.database.base import Base
 from app.database.seed import seed_database
 from app.database.session import SessionLocal, engine
 from app.models.alert import Alert  # noqa: F401 – imported for DDL
+from app.models.incident import Incident, InvestigationNote  # noqa: F401
 from app.models.log import Log  # noqa: F401
 from app.models.rule import DetectionRule  # noqa: F401
 from app.models.user import User  # noqa: F401
@@ -63,6 +65,7 @@ app.add_middleware(
 
 app.include_router(auth_router)
 app.include_router(api_router)
+app.include_router(incidents_router)
 
 
 @app.websocket("/ws")
