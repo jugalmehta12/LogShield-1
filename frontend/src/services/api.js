@@ -5,4 +5,17 @@ const apiClient = axios.create({
   timeout: 10000,
 });
 
+/**
+ * Attach the JWT Bearer token to every outgoing request when it exists
+ * in localStorage. The interceptor runs just before the request is sent
+ * so it always picks up the freshest token value.
+ */
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem('logshield_token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 export default apiClient;

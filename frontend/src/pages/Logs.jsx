@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useMemo, useState } from 'react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { useLogs } from '../hooks/useLogs';
+import { useRealtimeUpdates } from '../hooks/useRealtimeUpdates';
 
 const SEVERITY_STYLES = {
   low: 'border-emerald-400/20 bg-emerald-400/10 text-emerald-200',
@@ -59,15 +60,11 @@ function LogsPage() {
     );
   }, [logs]);
 
-  useEffect(() => {
-    const intervalId = setInterval(() => {
+  useRealtimeUpdates({
+    log_created: () => {
       refetch(queryParams);
-    }, 30000);
-
-    return () => {
-      clearInterval(intervalId);
-    };
-  }, [queryParams, refetch]);
+    },
+  });
 
   useEffect(() => {
     refetch(queryParams);

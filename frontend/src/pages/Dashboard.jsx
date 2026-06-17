@@ -1,25 +1,32 @@
-import { useEffect } from 'react';
 import StatCard from '../components/StatCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import AlertsStatusChart from '../charts/AlertsStatusChart';
 import LogsSeverityChart from '../charts/LogsSeverityChart';
 import { useAlerts } from '../hooks/useAlerts';
 import { useLogs } from '../hooks/useLogs';
+import { useRules } from '../hooks/useRules';
+import { useRealtimeUpdates } from '../hooks/useRealtimeUpdates';
 
 function DashboardPage() {
   const { logs, loading: logsLoading, error: logsError, refetch: refetchLogs } = useLogs();
   const { alerts, loading: alertsLoading, error: alertsError, refetch: refetchAlerts } = useAlerts();
+  const { rules, refetch: refetchRules } = useRules();
 
-  useEffect(() => {
-    const intervalId = setInterval(() => {
+  useRealtimeUpdates({
+    log_created: () => {
       refetchLogs();
       refetchAlerts();
-    }, 30000);
-
-    return () => {
-      clearInterval(intervalId);
-    };
-  }, [refetchAlerts, refetchLogs]);
+    },
+    alert_created: () => {
+      refetchAlerts();
+    },
+    alert_updated: () => {
+      refetchAlerts();
+    },
+    rule_created: () => refetchRules(),
+    rule_updated: () => refetchRules(),
+    rule_deleted: () => refetchRules(),
+  });
 
   const isLoading = logsLoading || alertsLoading;
   const error = logsError || alertsError;
@@ -29,6 +36,7 @@ function DashboardPage() {
   const openAlerts = alerts.filter((alert) => String(alert.status || '').toLowerCase() === 'open').length;
   const investigatingAlerts = alerts.filter((alert) => String(alert.status || '').toLowerCase() === 'investigating').length;
   const resolvedAlerts = alerts.filter((alert) => String(alert.status || '').toLowerCase() === 'resolved').length;
+  const activeRules = rules.filter((r) => r.enabled).length;
 
   const cards = [
     {
@@ -62,6 +70,12 @@ function DashboardPage() {
       accent: 'from-emerald-400 to-cyan-400',
     },
     {
+      label: 'Active Rules',
+      value: activeRules.toString(),
+      detail: 'Detection rules currently enabled.',
+      accent: 'from-violet-400 to-purple-500',
+    },
+    {
       label: 'System Status',
       value: error ? 'Degraded' : 'Online',
       detail: error || 'Backend API and frontend are connected.',
@@ -72,6 +86,7 @@ function DashboardPage() {
   const dashboardSummary = [
     { label: 'Open Alerts', value: openAlerts },
     { label: 'Logs Loaded', value: totalLogs },
+    { label: 'Active Rules', value: activeRules },
   ];
 
   return (
@@ -109,9 +124,9 @@ function DashboardPage() {
 
       <section className="rounded-3xl border border-white/10 bg-slate-950/70 p-5 shadow-[0_24px_80px_rgba(2,6,23,0.45)] backdrop-blur-xl">
         <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Auto Refresh</p>
-        <h3 className="mt-2 text-lg font-semibold text-white">Dashboard updates every 30 seconds</h3>
+        <h3 className="mt-2 text-lg font-semibold text-white">Dashboard updates instantly via WebSocket</h3>
         <p className="mt-3 text-sm leading-6 text-slate-300">
-          The dashboard periodically refreshes logs and alerts using hook-managed intervals with proper cleanup.
+          The dashboard listens for realtime log and alert events and refreshes itself without polling.
         </p>
       </section>
     </div>

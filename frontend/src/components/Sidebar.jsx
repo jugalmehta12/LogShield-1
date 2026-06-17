@@ -4,6 +4,7 @@ const NAV_ITEMS = [
   { to: '/dashboard', label: 'Dashboard' },
   { to: '/logs', label: 'Logs' },
   { to: '/alerts', label: 'Alerts' },
+  { to: '/rules', label: 'Rules' },
   { to: '/settings', label: 'Settings' },
 ];
 

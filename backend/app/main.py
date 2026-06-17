@@ -1,18 +1,26 @@
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
+import logging
 from typing import AsyncGenerator
 
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.auth import router as auth_router
 from app.api.routes import router as api_router
 from app.core.config import get_settings
 from app.database.base import Base
 from app.database.seed import seed_database
 from app.database.session import SessionLocal, engine
-from app.models.alert import Alert
-from app.models.log import Log
+from app.models.alert import Alert  # noqa: F401 – imported for DDL
+from app.models.log import Log  # noqa: F401
+from app.models.rule import DetectionRule  # noqa: F401
+from app.models.user import User  # noqa: F401
+from app.services import websocket_manager
+
+logger = logging.getLogger(__name__)
+
 settings = get_settings()
 
 
@@ -53,7 +61,26 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth_router)
 app.include_router(api_router)
+
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket) -> None:
+    """Accept realtime client connections and keep them alive until disconnect.
+
+    The endpoint supports multiple concurrent clients through the shared
+    connection manager. Incoming client messages are ignored for now; the socket
+    exists purely as a broadcast channel for server events.
+    """
+    await websocket_manager.connect(websocket)
+    try:
+        while True:
+            await websocket.receive_text()
+    except WebSocketDisconnect:
+        logger.info("WebSocket client disconnected cleanly")
+    finally:
+        await websocket_manager.disconnect(websocket)
 
 
 @app.get("/", tags=["system"])

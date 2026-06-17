@@ -8,6 +8,11 @@ from sqlalchemy.orm import Session
 
 from app.models.alert import Alert
 from app.schemas.alert import AlertCreate, AlertStatusLiteral
+from app.services import (
+    broadcast_from_sync,
+    build_alert_created_event,
+    build_alert_updated_event,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +28,8 @@ def create_alert(db: Session, payload: AlertCreate) -> Alert:
     db.add(alert)
     db.commit()
     db.refresh(alert)
+    logger.info("Created alert %s", alert.id)
+    broadcast_from_sync(build_alert_created_event(alert))
     return alert
 
 
@@ -82,4 +89,5 @@ def update_alert_status(db: Session, alert_id: int, status: AlertStatusLiteral) 
     db.commit()
     db.refresh(alert)
     logger.info("Updated alert %s status to %s", alert_id, status)
+    broadcast_from_sync(build_alert_updated_event(alert))
     return alert

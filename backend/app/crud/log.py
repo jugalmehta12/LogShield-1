@@ -10,7 +10,7 @@ from app.crud.alert import create_alert
 from app.models.log import Log
 from app.schemas.alert import AlertCreate
 from app.schemas.log import LogCreate
-from app.services.detection import analyze_log
+from app.services import analyze_log, broadcast_from_sync, build_log_created_event
 
 logger = logging.getLogger(__name__)
 
@@ -41,8 +41,11 @@ def create_log(db: Session, payload: LogCreate) -> Log:
     db.commit()
     db.refresh(log)
 
+    logger.info("Created log %s", log.id)
+    broadcast_from_sync(build_log_created_event(log))
+
     try:
-        alerts = analyze_log(log)
+        alerts = analyze_log(log, db=db)
     except Exception:
         logger.exception("Detection engine failed for log %s", log.id)
         return log

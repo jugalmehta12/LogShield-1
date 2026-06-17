@@ -23,6 +23,16 @@ class Settings:
             if origin.strip()
         ]
 
+        # ── JWT ──────────────────────────────────────────────────────────────
+        self.jwt_secret_key: str = os.getenv(
+            "JWT_SECRET_KEY",
+            "change-me-in-production-use-a-long-random-string-at-least-32-chars",
+        )
+        self.jwt_algorithm: str = os.getenv("JWT_ALGORITHM", "HS256")
+        self.jwt_access_token_expire_minutes: int = int(
+            os.getenv("JWT_ACCESS_TOKEN_EXPIRE_MINUTES", "60")
+        )
+
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
