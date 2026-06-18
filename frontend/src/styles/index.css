@@ -61,16 +61,48 @@ a {
   0%, 100% { opacity: 0.4; }
   50%       { opacity: 0.8; }
 }
+/* ── Skeleton card shimmer ────────────────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
 
-/* ── Responsive: KPI grid ─────────────────────────────────────────────────── */
-/* Desktop default: 4 columns (set inline on the element) */
 
+/* ── Responsive: KPI 5-col row (Row 1) ───────────────────────────────────── */
+@media (max-width: 1280px) {
+  .kpi-row-5 {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+@media (max-width: 768px) {
+  .kpi-row-5 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+@media (max-width: 480px) {
+  .kpi-row-5 {
+    grid-template-columns: repeat(1, 1fr) !important;
+  }
+}
+
+/* ── Responsive: KPI 4-col row (Row 2) ───────────────────────────────────── */
+@media (max-width: 1024px) {
+  .kpi-row-4 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+@media (max-width: 480px) {
+  .kpi-row-4 {
+    grid-template-columns: repeat(1, 1fr) !important;
+  }
+}
+
+/* ── Responsive: legacy KPI grid ─────────────────────────────────────────── */
 @media (max-width: 1024px) {
   .kpi-grid-responsive {
     grid-template-columns: repeat(2, 1fr) !important;
   }
 }
-
 @media (max-width: 640px) {
   .kpi-grid-responsive {
     grid-template-columns: repeat(1, 1fr) !important;
@@ -84,22 +116,16 @@ a {
   }
 }
 
-/* ── Responsive: stat/KPI grid (Dashboard page) ───────────────────────────── */
-@media (max-width: 1024px) {
-  .stat-grid-responsive {
-    grid-template-columns: repeat(2, 1fr) !important;
-  }
+/* ── StatCard — compact widget height guardrail ───────────────────────────── */
+article[style*="height: 96px"],
+article[style*="height:96px"] {
+  min-height: 96px !important;
+  max-height: 96px !important;
 }
 
-@media (max-width: 640px) {
-  .stat-grid-responsive {
-    grid-template-columns: repeat(1, 1fr) !important;
-  }
+/* ── Status dot pulse animation ───────────────────────────────────────────── */
+@keyframes statusPulse {
+  0%, 100% { opacity: 1;   transform: scale(1);    }
+  50%       { opacity: 0.6; transform: scale(1.25); }
 }
 
-/* ── StatCard height guardrail ────────────────────────────────────────────── */
-/* Belt-and-suspenders: prevents any inherited Tailwind prose from inflating cards */
-article.stat-card-root {
-  min-height: 110px;
-  max-height: 120px;
-}

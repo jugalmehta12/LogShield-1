@@ -1,29 +1,39 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import api from '../services/api';
+
+const POLL_INTERVAL_MS = 15_000;
 
 function normalizeAlerts(items) {
   return Array.isArray(items) ? items : [];
 }
 
 export function useAlerts() {
-  const [alerts, setAlerts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [alerts,          setAlerts]          = useState([]);
+  const [loading,         setLoading]         = useState(true);
   const [updatingAlertId, setUpdatingAlertId] = useState(null);
-  const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
+  const [error,           setError]           = useState('');
+  const [message,         setMessage]         = useState('');
+
+  const cancelledRef = useRef(false);
 
   const fetchAlerts = useCallback(async () => {
+    if (cancelledRef.current) return;
     setLoading(true);
     setError('');
 
     try {
       const response = await api.get('/alerts');
-      setAlerts(normalizeAlerts(response.data.items));
-    } catch (requestError) {
-      setAlerts([]);
-      setError('Unable to load alerts. Check that the backend is running on http://127.0.0.1:8000.');
+      if (!cancelledRef.current) {
+        setAlerts(normalizeAlerts(response.data.items));
+      }
+    } catch {
+      if (!cancelledRef.current) {
+        setError('Unable to load alerts. Check that the backend is running on http://127.0.0.1:8000.');
+      }
     } finally {
-      setLoading(false);
+      if (!cancelledRef.current) {
+        setLoading(false);
+      }
     }
   }, []);
 
@@ -32,39 +42,43 @@ export function useAlerts() {
     setError('');
     setMessage('');
 
-    const previousAlerts = alerts;
-    const nextAlerts = previousAlerts.map((alert) =>
-      alert.id === alertId ? { ...alert, status } : alert,
+    // Optimistic update
+    setAlerts((prev) =>
+      prev.map((alert) =>
+        alert.id === alertId ? { ...alert, status } : alert,
+      ),
     );
-
-    setAlerts(nextAlerts);
 
     try {
       await api.patch(`/alerts/${alertId}`, { status });
-      setMessage(`Alert ${alertId} updated to ${status}.`);
-      await fetchAlerts();
-    } catch (requestError) {
-      setAlerts(previousAlerts);
-      setError('Unable to update alert status. Please try again.');
+      if (!cancelledRef.current) {
+        setMessage(`Alert ${alertId} updated to ${status}.`);
+        await fetchAlerts();
+      }
+    } catch {
+      // roll back
+      if (!cancelledRef.current) {
+        await fetchAlerts();
+        setError('Unable to update alert status. Please try again.');
+      }
     } finally {
-      setUpdatingAlertId(null);
+      if (!cancelledRef.current) {
+        setUpdatingAlertId(null);
+      }
     }
-  }, [alerts, fetchAlerts]);
+  }, [fetchAlerts]);
 
   useEffect(() => {
-    let mounted = true;
+    cancelledRef.current = false;
+    fetchAlerts();
 
-    const run = async () => {
-      if (!mounted) {
-        return;
-      }
-      await fetchAlerts();
-    };
-
-    run();
+    const id = setInterval(() => {
+      if (!cancelledRef.current) fetchAlerts();
+    }, POLL_INTERVAL_MS);
 
     return () => {
-      mounted = false;
+      cancelledRef.current = true;
+      clearInterval(id);
     };
   }, [fetchAlerts]);
 

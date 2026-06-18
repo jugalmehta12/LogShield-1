@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import apiClient from '../services/api';
 
-const REFRESH_INTERVAL_MS = 30_000;
+const REFRESH_INTERVAL_MS = 15_000;
 
 /**
  * @typedef {Object} AnalyticsSummary
@@ -54,8 +54,10 @@ export function useAnalytics() {
 
   const cancelledRef = useRef(false);
 
+  const isFirstFetch = useRef(true);
+
   const fetchAll = useCallback(async () => {
-    setLoading(true);
+    if (isFirstFetch.current) setLoading(true);
     setError(null);
 
     try {
@@ -72,6 +74,7 @@ export function useAnalytics() {
         setTopSources(Array.isArray(sourcesRes.data) ? sourcesRes.data : []);
         setAlertsOverTime(Array.isArray(timelineRes.data) ? timelineRes.data : []);
         setLastRefreshed(new Date());
+        isFirstFetch.current = false;
       }
     } catch (err) {
       if (!cancelledRef.current) {
